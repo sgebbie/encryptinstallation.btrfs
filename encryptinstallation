@@ -788,7 +788,7 @@ function preInstallationProcess ()
 	fi
 
 	setUpLogicalVolume Root root system '100%FREE'	# Create root.
-	formatVolume Root system-root ext4 root		# Format root.
+	formatVolume Root system-root ${ROOT_FILESYSTEM_TYPE} root		# Format root.
 
 	if ${DATA_PARTITION_CHOSEN}
 	then
@@ -962,12 +962,20 @@ function formatVolume ()
 	echo "Format ${HUMAN_NAME} partition ${PARTITION} (${LABEL}) as ${TYPE}..."
 
 	# Format the partition.
-	if [[ ${TYPE} == 'swap' ]]
-	then
-		sudo mkswap --label=${LABEL} /dev/mapper/${PARTITION}
-	else
-		sudo mkfs.ext4 -L ${LABEL} /dev/mapper/${PARTITION}
-	fi
+	case "${TYPE}" in
+		swap)
+			sudo mkswap --label=${LABEL} /dev/mapper/${PARTITION}
+		;;
+		ext4)
+			sudo mkfs.ext4 -L ${LABEL} /dev/mapper/${PARTITION}
+		;;
+		btrfs)
+			sudo mkfs.btrfs -L ${LABEL} /dev/mapper/${PARTITION}
+		;;
+		*)
+			error "Unsupported file system type: ${TYPE} for ${HUMAN_NAME} partition in ${PARTITION}." 1
+		;;
+	esac
 
 	local -ir RET=${?}				# Catch the return code.
 
