@@ -377,6 +377,7 @@ function findPartitions ()
 			declare -gr DATA_PARTITION_CHOSEN=false
 		fi
 	else
+		declare -gr DATA_PARTITION_CHOSEN=false
 		cat <<-END
 
 			${SPACER}
