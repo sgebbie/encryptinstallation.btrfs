@@ -1144,7 +1144,7 @@ function postInstallationProcess ()
 function mountPartitions ()
 {
 	local -i RET					# To catch errors.
-	local -i MOUNT_OPTIONS				# for subvol if necessary
+	local MOUNT_OPTIONS				# for subvol if necessary
 
 	# Create a mount point for root.
 	sudo mkdir /mnt/root
