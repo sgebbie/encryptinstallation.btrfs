@@ -233,6 +233,7 @@ function gatherData ()
 
 		Partition ${B}${PARTITION_ESP}${R} will be used for the EFI System Partition.
 		Partition ${B}${PARTITION_SYSTEM}${R} will be used for your System partition (root).
+		The root partition will be formated as: ${ROOT_FILESYSTEM_TYPE}.
 		                      Passphrase: ${B}${PASSPHRASE_SYSTEM}${R}
 		${DATA_MSG}
 		${SWAP_MSG}
@@ -267,13 +268,15 @@ function gatherData ()
 #	Find the partitions.
 #
 # Return
-#	DATA_PARTITION_CHOSEN	true or false
-#	SWAP_PARTITION_CHOSEN	true or false
-#	SWAP_PARTITION_SIZE	Size in MiB or unset
-#	HIBERNATION_CHOSEN	true or false
-#	PARTITION_ESP		/dev/[partition] e.g. /dev/sda2, /dev/nvme0n1p2
-#	PARTITION_SYSTEM	/dev/[partition] e.g. /dev/sda5, /dev/nvme0n1p5
-#	PARTITION_DATA		/dev/[partition] e.g. /dev/sdb1, /dev/nvme0n2p1. Unset if unused.
+#	ROOT_FILESYSTEM_TYPE		btrfs or ext4
+#	DATA_PARTITION_SUPPORTED	true or false
+#	DATA_PARTITION_CHOSEN		true or false
+#	SWAP_PARTITION_CHOSEN		true or false
+#	SWAP_PARTITION_SIZE		Size in MiB or unset
+#	HIBERNATION_CHOSEN		true or false
+#	PARTITION_ESP			/dev/[partition] e.g. /dev/sda2, /dev/nvme0n1p2
+#	PARTITION_SYSTEM		/dev/[partition] e.g. /dev/sda5, /dev/nvme0n1p5
+#	PARTITION_DATA			/dev/[partition] e.g. /dev/sdb1, /dev/nvme0n2p1. Unset if unused.
 #---------------------------------------------------------------------------------------------------
 
 
@@ -322,25 +325,66 @@ function findPartitions ()
 	# For now, hibernation follows swap.
 	declare -gr HIBERNATION_CHOSEN=${SWAP_PARTITION_CHOSEN}
 
-	# Do we have a data partition?
-	until [[ "${ANSWER,}" =~ ^[yn]$ ]]
+	# select which file system we want root
+	until [[ "${ANSWER,}" =~ ^(ext4|btrfs)$ ]]
 	do
 		cat <<-END
 
 			${SPACER}
 
-			The instructions asked you to choose whether or not to have a separate data partition.
-			Did you choose to have a separate partition?
+			This version of 'encryptinstallation' attempts to support both ext4 and btrfs.
+			Note, 'btrfs' root is not currently compatible with a separate data partition.
+			The data partition option will not be offered if you choose 'btrfs'.
+			Do you want your root partition to be 'btrfs' or 'ext4'?
 
 		END
-		read -rp "Press ${B}Y${R} for Yes, or ${B}N${R} for No, and then Enter. ${B}" ANSWER
+		read -rp "Type ${B}btrfs${R}, or ${B}ext4${R}, and then Enter. ${B}" ANSWER
 		echo "${R}"
 	done
-	if [[ ${ANSWER,} == y ]]
+	if [[ "${ANSWER,}" =~ ^(ext4|btrfs)$ ]]
 	then
-		declare -gr DATA_PARTITION_CHOSEN=true
+		declare -gr ROOT_FILESYSTEM_TYPE=${ANSWER}
 	else
-		declare -gr DATA_PARTITION_CHOSEN=false
+		declare -gr ROOT_FILESYSTEM_TYPE=ext4
+	fi
+	if [[ "${ROOT_FILESYSTEM_TYPE}" == ext4 ]]
+	then
+		declare -gr DATA_PARTITION_SUPPORTED=true
+	else
+		declare -gr DATA_PARTITION_SUPPORTED=false
+	fi
+
+	if ${DATA_PARTITION_SUPPORTED}
+	then
+		# Do we have a data partition?
+		until [[ "${ANSWER,}" =~ ^[yn]$ ]]
+		do
+			cat <<-END
+
+				${SPACER}
+
+				The instructions asked you to choose whether or not to have a separate data partition.
+				Did you choose to have a separate partition?
+
+			END
+			read -rp "Press ${B}Y${R} for Yes, or ${B}N${R} for No, and then Enter. ${B}" ANSWER
+			echo "${R}"
+		done
+		if [[ ${ANSWER,} == y ]]
+		then
+			declare -gr DATA_PARTITION_CHOSEN=true
+		else
+			declare -gr DATA_PARTITION_CHOSEN=false
+		fi
+	else
+		cat <<-END
+
+			${SPACER}
+
+			With 'btrfs' a separate data partition is not supported.
+			However, Ubuntu will set up a separate subvolume, @home, for /home, by default.
+
+		END
 	fi
 
 	# The ESP partition.
