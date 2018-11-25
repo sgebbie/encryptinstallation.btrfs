@@ -1143,12 +1143,23 @@ function postInstallationProcess ()
 function mountPartitions ()
 {
 	local -i RET					# To catch errors.
+	local -i MOUNT_OPTIONS				# for subvol if necessary
 
-	sudo mkdir /mnt/root				# Create a mount point for root.
+	# Create a mount point for root.
+	sudo mkdir /mnt/root
 	RET=${?}
 	(( RET )) && error 'Error creating a mount point for root.' ${RET}
 
-	sudo mount /dev/mapper/system-root /mnt/root	# Mount root.
+	# add mount options for btrfs
+	if [[ "${ROOT_FILESYSTEM_TYPE}" == btrfs ]]
+	then
+		MOUNT_OPTIONS="-o subvol=@"
+	else
+		MOUNT_OPTIONS=""
+	fi
+
+	# Mount root.
+	sudo mount ${MOUNT_OPTIONS} /dev/mapper/system-root /mnt/root
 	RET=${?}
 	(( RET )) && error 'Error mounting root.' ${RET}
 
@@ -1157,16 +1168,25 @@ function mountPartitions ()
 	RET=${?}
 	(( RET )) && error 'Error mounting /boot.' ${RET}
 
-	sudo mount ${PARTITION_ESP} /mnt/root/boot/efi	# Mount the EFI.
+	# Mount the EFI.
+	sudo mount ${PARTITION_ESP} /mnt/root/boot/efi
 	RET=${?}
 	(( RET )) && error 'Error mounting the EFI System Partition (ESP).' ${RET}
 
+	# Mount /home (separate data partition).
 	if ${DATA_PARTITION_CHOSEN}
 	then
-		# Mount /home.
 		sudo mount /dev/mapper/data-home /mnt/root/home
 		RET=${?}
 		(( RET )) && error 'Error mounting /home.' ${RET}
+	fi
+
+	# Mount /home (btrfs)
+	if [[ "${ROOT_FILESYSTEM_TYPE}" == btrfs ]]
+	then
+		sudo mount -o subvol=@home /dev/mapper/system-root /mnt/root/home
+		RET=${?}
+		(( RET )) && error 'Error mounting home subvolume.' ${RET}
 	fi
 
 } # mountPartitions
