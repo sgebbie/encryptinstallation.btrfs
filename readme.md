@@ -1,25 +1,26 @@
-# Ubuntu Full Disk Encryption with BTRFS
+# Ubuntu Full System Encryption with BTRFS
 by Stewart Gebbie
-2018
+2018-11-28
 
 This is based on the excellent set of instructions and installations scripts
-that can be found via: [Manual Full System Encryption][manual-full-system-encryption].
+that can be found via:
+[Manual Full System Encryption][manual-full-system-encryption].
 
 This does not attempt to provide a nice neat set of scripts to automate the
-installation for BTRFS, but rather enumerates my various tweaks. It also
-includes some tweaks for issues related to boot time and partitioning.
+installation for [BTRFS][btrfs], but rather enumerates my various tweaks. It
+also includes some tweaks for issues related to boot time and partitioning.
 
 In particular I will cover the rough steps taken to:
 
 1. allow better shrinking of existing Windows partitions
 2. fix boot bug due to Secure Boot and GRUB modules
-4. tweak BIOS sleep state to support hybrid-suspend (TODO)
+4. tweak BIOS sleep state to support hybrid-suspend
 3. tweak creation scripts to support BRTFS
 4. change LUKS keys to reduce boot time (warning)
 
 __HERE BE DRAGONS__ please take anything said below with a pinch of salt and
 follow at your own risk. I have not double checked all the details and these
-amendments to the original guide have not been battle tested on other system
+amendments, to the original guide, have not been battle tested on other system
 configurations.
 
 ## Partitioning
@@ -77,11 +78,20 @@ The Lenovo ThinkPad X1 Carbon 6th Generation that I was installing Ubuntu on,
 with full system encryption, still had a bug that prevented Linux from making
 use of the S3 sleep state.
 
-This has been fixed in later versions of the BIOS:
-   TODO include link
+This has been fixed in later versions of the [BIOS][x1bios]:
+
+* [BIOS Update Utility - ThinkPad X1 Carbon (Type 20KH, 20KG)][n23uj11w.txt]
 
 Simply upgrade to a newer BIOS version and then remember to toggle the power
 management sleep mode from "Windows 10" to "Linux."
+
+Following this, you can test if the OS exposes the necessary sleep state:
+
+```
+pm-is-supported --suspend-hybrid && echo true
+```
+
+And with the BIOS update it should do the "right thing"™.
 
 ## BTRFS
 
@@ -204,3 +214,6 @@ BTRFS then hopefully the above details will help you on you way.
 
 [manual-full-system-encryption]: https://help.ubuntu.com/community/ManualFullSystemEncryption "Manual Full System Encryption by Paddy Landau"
 [shrinking-past-unmovable]: https://www.download3k.com/articles/How-to-shrink-a-disk-volume-beyond-the-point-where-any-unmovable-files-are-located-00432 "How to shrink a disk volume beyond the point where any unmovable files are located by Mihai Neacsu on 25 June 2014"
+[n23uj11w.txt]: https://download.lenovo.com/pccbbs/mobiles/n23uj11w.txt "Lenovo BIOS Update Utility - ThinkPad X1 Carbon (Type 20KH, 20KG)"
+[x1bios]: https://pcsupport.lenovo.com/za/en/products/laptops-and-netbooks/thinkpad-x-series-laptops/thinkpad-x1-carbon-6th-gen-type-20kh-20kg/downloads/ds502281 "Lenovo Carbon X1 BIOS"
+[btrfs]: https://btrfs.wiki.kernel.org "B-Tree File System (BTRFS)"
