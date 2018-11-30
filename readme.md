@@ -62,7 +62,7 @@ simply drops through silently without displaying a failure.
 
 In short, it is necessary to disable "Secure Boot."
 
-Following this the boot process will do "the right thing" (TM) and prompt for a
+Following this the boot process will do "the right thing"™ and prompt for a
 password:
 
 ```
@@ -177,7 +177,7 @@ At this point in time it is probably work performing a simply sanity check and
 dump the header just to check the layout:
 
 ```
-cryptsetup luksDump /dev/nvme0n1p5
+cryptsetup luksDump /dev/nvme0n1p?
 ```
 Confirm that `Key Slot 0` is `ENABLED` and that the `Iterations:` value matches
 the number provided with `--pbkdf-force-iterations` value above.
