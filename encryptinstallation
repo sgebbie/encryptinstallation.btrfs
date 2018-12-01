@@ -3,6 +3,17 @@
 
 ####################################################################################################
 #
+# This version is modified to support BTRFS as an option for the root filesystem.
+#
+# For the original please see:
+#   https://help.ubuntu.com/community/ManualFullSystemEncryption
+#   https://www.dropbox.com/s/dmqnzqs1bbp6dm9/encryptinstallation?dl=1
+#
+####################################################################################################
+
+
+####################################################################################################
+#
 #	ENCRYPT INSTALLATION
 #
 # This script is to be run only as instructed in Manual Full System Encryption for Ubuntu. See
