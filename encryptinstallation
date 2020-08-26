@@ -1214,14 +1214,12 @@ function receiveScripts ()
 	local -i RET					# To catch errors.
 
 	# Receive the script for use after chroot.
-	sudo wget --no-verbose --output-document=/mnt/root/usr/local/sbin/encryptinstallationchroot	\
-		  https://www.dropbox.com/s/fx5przc19rp1n7d/encryptinstallationchroot?dl=1
+	sudo cp ./encryptinstallationchroot /mnt/root/usr/local/sbin
 	RET=${?}
 	(( RET )) && error 'Unable to download the script encryptinstallationchroot.' ${RET}
 
 	# Receive the script to refresh Grub.
-	sudo wget --no-verbose --output-document=/mnt/root/usr/local/sbin/refreshgrub	\
-		  https://www.dropbox.com/s/npoazngcj3khcvf/refreshgrub?dl=1
+	sudo cp ./refreshgrub /mnt/root/usr/local/sbin
 	RET=${?}
 	(( RET )) && error 'Unable to download the script refreshgrub.' ${RET}
 
